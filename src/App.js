@@ -292,7 +292,7 @@ const FlowApp = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [nodeIdCounter, setNodeIdCounter] = useState(backendData.length + 1);
-  const [edgeType, setEdgeType] = useState('smoothstep'); // Default edge type is smoothstep
+  const [edgeType, setEdgeType] = useState('step'); // Default edge type is smoothstep
 
   // Initialize with backend data
   useEffect(() => {
@@ -396,7 +396,7 @@ const FlowApp = () => {
   );
 
   const toggleEdgeType = () => {
-    const newEdgeType = edgeType === 'smoothstep' ? 'customEdge' : 'smoothstep';
+    const newEdgeType = edgeType === 'step' ? 'customEdge' : 'step';
     setEdgeType(newEdgeType);
     setEdges((eds) => eds.map((edge) => ({ ...edge, type: newEdgeType })));
   };
