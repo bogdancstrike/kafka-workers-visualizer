@@ -8,6 +8,7 @@ import ReactFlow, {
   Handle,
   useNodesState,
   useEdgesState,
+  MarkerType,
 } from 'react-flow-renderer';
 import dagre from 'dagre';
 import { Button } from 'antd';
@@ -82,7 +83,7 @@ const generateInitialNodesAndEdges = (data) => {
         id: `e-${inputTopic}-worker-${item.id}`,
         source: inputTopic,
         target: `worker-${item.id}`,
-        type: 'custom',
+        type: 'floating',
         animated: true,
       });
     });
@@ -93,7 +94,7 @@ const generateInitialNodesAndEdges = (data) => {
         id: `e-worker-${item.id}-${outputTopic}`,
         source: `worker-${item.id}`,
         target: outputTopic,
-        type: 'custom',
+        type: 'floating',
         animated: true,
       });
     });
@@ -169,10 +170,10 @@ const TopicNode = ({ data }) => {
 };
 
 // Custom Edge with Delete Button
-const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd, setEdges }) => {
+const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd, data }) => {
   const onEdgeClick = (evt, edgeId) => {
     evt.stopPropagation();
-    setEdges((eds) => eds.filter((edge) => edge.id !== edgeId));
+    data.onEdgeDelete(edgeId); // Use the onEdgeDelete function passed via the data prop
   };
 
   return (
@@ -202,7 +203,7 @@ const nodeTypes = {
 };
 
 const edgeTypes = {
-  custom: CustomEdge,
+  floating: CustomEdge,
 };
 
 const FlowApp = () => {
@@ -219,9 +220,23 @@ const FlowApp = () => {
   }, [setNodes, setEdges]);
 
   const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge({ ...params, type: 'custom' }, eds)),
+    (params) => setEdges((eds) => addEdge({ ...params, type: 'floating', data: { onEdgeDelete } }, eds)),
     [setEdges]
   );
+
+  const isValidConnection = (connection) => {
+    const sourceNode = nodes.find((node) => node.id === connection.source);
+    const targetNode = nodes.find((node) => node.id === connection.target);
+
+    // Allow connections only between workers and topics
+    if (
+      (sourceNode.type === 'worker' && targetNode.type === 'topic') ||
+      (sourceNode.type === 'topic' && targetNode.type === 'worker')
+    ) {
+      return true;
+    }
+    return false;
+  };
 
   const onAddWorker = useCallback(() => {
     const newWorker = {
@@ -287,6 +302,13 @@ const FlowApp = () => {
     [nodes, edges, setNodes, setEdges]
   );
 
+  const onEdgeDelete = useCallback(
+    (id) => {
+      setEdges((eds) => eds.filter((edge) => edge.id !== id));
+    },
+    [setEdges]
+  );
+
   return (
     <div style={{ height: '100vh' }}>
       <div className="controls">
@@ -315,6 +337,8 @@ const FlowApp = () => {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView
+        isValidConnection={isValidConnection}
+        defaultEdgeOptions={{ data: { onEdgeDelete } }}
       >
         <MiniMap />
         <Controls />
