@@ -1,70 +1,100 @@
-# Getting Started with Create React App
+# React Flow Kafka Topology Visualization
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is a React application that visualizes Kafka consumer and topic topologies using `react-flow-renderer`. The application allows users to dynamically create, edit, and delete Kafka consumers (referred to as "workers") and Kafka topics, providing a visual interface to manage the relationships between these elements.
 
-## Available Scripts
+## Table of Contents
+- [Introduction](#introduction)
+- [Features](#features)
+- [Project Structure](#project-structure)
+- [Installation](#installation)
+- [Running the Application](#running-the-application)
+- [Usage](#usage)
+- [License](#license)
 
-In the project directory, you can run:
+## Introduction
 
-### `npm start`
+This application provides a visual tool to manage Kafka topics and consumers. The visualized graph allows you to add, delete, and edit both workers and topics, as well as the connections between them. The layout of the graph can be adjusted dynamically, and the configurations can be saved to mimic a backend Kafka configuration structure.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Features
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Dynamic Node Addition**: Add new Kafka consumers (workers) and topics.
+- **Dynamic Edge Creation**: Establish relationships between workers and topics through draggable edges.
+- **Node and Edge Editing**: Modify the labels of nodes and delete nodes or edges directly from the UI.
+- **Layout Management**: Adjust the layout of the graph with both vertical and horizontal orientations.
+- **Customizable Layout**: Use sliders to control the separation between nodes and ranks in the layout.
+- **Save Configuration**: Generate and log a JSON structure representing the current graph state.
 
-### `npm test`
+## Project Structure
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+The project structure is simple and revolves around the main `FlowApp` component:
 
-### `npm run build`
+```docs
+src/
+│
+├── App.css # Styling for the application
+├── App.js # Main entry point of the React application
+└── index.js # Entry point for ReactDOM
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Installation
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+To install and run this project locally, follow these steps:
 
-### `npm run eject`
+1. **Clone the Repository**
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+    ```bash
+    git clone https://github.com/bogdancstrike/kafka-workers-visualizer
+    cd kafka-workers-visualizer
+    ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+2. **Install Dependencies**
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+    Use npm or yarn to install the project dependencies:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+    ```bash
+    npm install
+    ```
 
-## Learn More
+## Running the Application
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Once the dependencies are installed, you can start the development server:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+npm start
+```
 
-### Code Splitting
+## Usage
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- **Add Worker**: 
+  - Click on the "Add Worker" button to create a new Kafka consumer node (referred to as "worker").
+  - The new worker node will be positioned randomly within the canvas area.
 
-### Analyzing the Bundle Size
+- **Add Topic**:
+  - Click on the "Add Topic" button to create a new Kafka topic node.
+  - The new topic node will be positioned randomly within the canvas area.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- **Create Connections**:
+  - Drag from the handle (small circle) on the side of a node to another node to create an edge (connection).
+  - Connections can only be made between workers and topics.
 
-### Making a Progressive Web App
+- **Edit Labels**:
+  - Click on the label of any node to edit its name.
+  - The label field is an input box that allows for direct editing.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- **Delete Nodes or Edges**:
+  - To delete a node (worker or topic), click the red "×" button located in the top-right corner of the node.
+  - To delete an edge, click on the "Delete" text that appears along the edge.
 
-### Advanced Configuration
+- **Adjust Layout**:
+  - Click on the "Vertical Layout" button to arrange the graph in a top-to-bottom (TB) direction.
+  - Click on the "Horizontal Layout" button to arrange the graph in a left-to-right (LR) direction.
+  - Use the sliders to adjust the separation between nodes (Node Separation) and between rows/columns (Rank Separation).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- **Save Configuration**:
+  - Click on the "Save" button to log the current configuration of nodes and edges as a JSON object in the console.
+  - The JSON object will represent the topology as a list of worker nodes, each with associated input and output topics.
 
-### Deployment
+## License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This project is licensed under the **MIT** License.
