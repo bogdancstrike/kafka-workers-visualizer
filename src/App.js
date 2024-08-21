@@ -60,7 +60,7 @@ const backendData = [
 ];
 
 // Generate initial nodes and edges based on backend data
-const generateInitialNodesAndEdges = (data) => {
+const generateInitialNodesAndEdges = (data, onDeleteNode) => {
   const nodes = [];
   const edges = [];
   const topics = new Set();
@@ -70,7 +70,7 @@ const generateInitialNodesAndEdges = (data) => {
     nodes.push({
       id: `worker-${item.id}`,
       type: 'worker',
-      data: { label: `worker${item.id}` },
+      data: { label: `worker${item.id}`, onDeleteNode },
       position: { x: 0, y: 0 }, // Initial positions, will be updated by Dagre layout
     });
 
@@ -106,7 +106,7 @@ const generateInitialNodesAndEdges = (data) => {
     nodes.push({
       id: topic,
       type: 'topic',
-      data: { label: topic },
+      data: { label: topic, onDeleteNode },
       position: { x: 0, y: 0 }, // Initial positions, will be updated by Dagre layout
     });
   });
@@ -148,23 +148,67 @@ const getLayoutedElements = (nodes, edges, direction = 'LR') => {
   return { nodes, edges };
 };
 
-// Custom Node for Workers (formerly Consumers) with pink background
-const WorkerNode = ({ data }) => {
+// Custom Node for Workers with Delete Button
+const WorkerNode = ({ data, id }) => {
+  const onDeleteClick = () => {
+    console.log(`Attempting to delete worker node: ${id}`);
+    data.onDeleteNode(id);
+  };
+
   return (
-    <div style={{ backgroundColor: '#FFC0CB', padding: '10px', borderRadius: '5px', border: '1px solid #000' }}>
+    <div style={{ backgroundColor: '#FFC0CB', padding: '10px', borderRadius: '5px', border: '1px solid #000', position: 'relative' }}>
       <Handle type="target" position="left" style={{ background: '#555' }} />
       <strong>{data.label}</strong>
+      <button
+        onClick={onDeleteClick}
+        style={{
+          position: 'absolute',
+          top: '5px',
+          right: '5px',
+          background: 'red',
+          color: 'white',
+          border: 'none',
+          borderRadius: '50%',
+          width: '20px',
+          height: '20px',
+          cursor: 'pointer',
+        }}
+      >
+        &times;
+      </button>
       <Handle type="source" position="right" style={{ background: '#555' }} />
     </div>
   );
 };
 
-// Custom Node for Topics with blue background
-const TopicNode = ({ data }) => {
+// Custom Node for Topics with Delete Button
+const TopicNode = ({ data, id }) => {
+  const onDeleteClick = () => {
+    console.log(`Attempting to delete topic node: ${id}`);
+    data.onDeleteNode(id);
+  };
+
   return (
-    <div style={{ backgroundColor: '#ADD8E6', padding: '10px', borderRadius: '5px', border: '1px solid #000' }}>
+    <div style={{ backgroundColor: '#ADD8E6', padding: '10px', borderRadius: '5px', border: '1px solid #000', position: 'relative' }}>
       <Handle type="target" position="left" style={{ background: '#555' }} />
       <strong>{data.label}</strong>
+      <button
+        onClick={onDeleteClick}
+        style={{
+          position: 'absolute',
+          top: '5px',
+          right: '5px',
+          background: 'red',
+          color: 'white',
+          border: 'none',
+          borderRadius: '50%',
+          width: '20px',
+          height: '20px',
+          cursor: 'pointer',
+        }}
+      >
+        &times;
+      </button>
       <Handle type="source" position="right" style={{ background: '#555' }} />
     </div>
   );
@@ -194,6 +238,7 @@ const CustomSmoothStepEdge = ({
 
   const onEdgeClick = (evt, edgeId) => {
     evt.stopPropagation();
+    console.log(`Deleting edge with id: ${edgeId}`);
     data.onEdgeDelete(edgeId); // Use the onEdgeDelete function passed via the data prop
   };
 
@@ -244,6 +289,7 @@ const CustomFloatingEdge = ({
 
   const onEdgeClick = (evt, edgeId) => {
     evt.stopPropagation();
+    console.log(`Deleting edge with id: ${edgeId}`);
     data.onEdgeDelete(edgeId); // Use the onEdgeDelete function passed via the data prop
   };
 
@@ -292,11 +338,11 @@ const FlowApp = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [nodeIdCounter, setNodeIdCounter] = useState(backendData.length + 1);
-  const [edgeType, setEdgeType] = useState('step'); // Default edge type is smoothstep
+  const [edgeType, setEdgeType] = useState('customEdge'); // Default edge type
 
   // Initialize with backend data
   useEffect(() => {
-    const { nodes, edges } = generateInitialNodesAndEdges(backendData);
+    const { nodes, edges } = generateInitialNodesAndEdges(backendData, onDeleteNode);
     const layouted = getLayoutedElements(nodes, edges);
     setNodes(layouted.nodes);
     setEdges(layouted.edges);
@@ -315,40 +361,52 @@ const FlowApp = () => {
     const targetNode = nodes.find((node) => node.id === connection.target);
 
     // Allow connections only between workers and topics
-    if (
+    return (
       (sourceNode.type === 'worker' && targetNode.type === 'topic') ||
       (sourceNode.type === 'topic' && targetNode.type === 'worker')
-    ) {
-      return true;
-    }
-    return false;
+    );
   };
 
   const onAddWorker = useCallback(() => {
     const newWorker = {
       id: `worker-${nodeIdCounter}`,
       type: 'worker',
-      data: { label: `Worker ${nodeIdCounter}` },
+      data: { label: `Worker ${nodeIdCounter}`, onDeleteNode },
       position: { x: 200, y: Math.random() * 250 },
     };
 
     setNodes((nds) => [...nds, newWorker]);
     setNodeIdCounter((id) => id + 1);
-    console.log('Added Worker:', newWorker);
   }, [nodeIdCounter, setNodes]);
 
   const onAddTopic = useCallback(() => {
     const newTopic = {
       id: `topic-${nodeIdCounter}`,
       type: 'topic',
-      data: { label: `Topic ${nodeIdCounter}` },
+      data: { label: `Topic ${nodeIdCounter}`, onDeleteNode },
       position: { x: 400, y: Math.random() * 250 },
     };
 
     setNodes((nds) => [...nds, newTopic]);
     setNodeIdCounter((id) => id + 1);
-    console.log('Added Topic:', newTopic);
   }, [nodeIdCounter, setNodes]);
+
+  const onEdgeDelete = useCallback(
+    (id) => {
+      console.log(`Deleting edge with id: ${id}`);
+      setEdges((eds) => eds.filter((edge) => edge.id !== id));
+    },
+    [setEdges]
+  );
+
+  const onDeleteNode = useCallback(
+    (id) => {
+      console.log(`Deleting node with id: ${id}`);
+      setNodes((nds) => nds.filter((node) => node.id !== id));
+      setEdges((eds) => eds.filter((edge) => edge.source !== id && edge.target !== id));
+    },
+    [setNodes, setEdges]
+  );
 
   const onSave = () => {
     console.log('Current nodes:', nodes);
@@ -369,11 +427,11 @@ const FlowApp = () => {
 
         return {
           id: parseInt(worker.id.split('-')[1]),
-          worker_name: worker.data.label, // Updated key to worker_name
+          worker_name: worker.data.label,
           topics_input: inputs,
           topics_output: outputs,
-          metadatas: '', // Assuming empty for now
-          kafka_bootstrap_server: '172.17.12.80:9092', // Assuming constant value for now
+          metadatas: '',
+          kafka_bootstrap_server: '172.17.12.80:9092',
         };
       });
     console.log('Generated Table Structure (JSON):', JSON.stringify(tableStructure, null, 2));
@@ -388,15 +446,8 @@ const FlowApp = () => {
     [nodes, edges, setNodes, setEdges]
   );
 
-  const onEdgeDelete = useCallback(
-    (id) => {
-      setEdges((eds) => eds.filter((edge) => edge.id !== id));
-    },
-    [setEdges]
-  );
-
   const toggleEdgeType = () => {
-    const newEdgeType = edgeType === 'step' ? 'customEdge' : 'step';
+    const newEdgeType = edgeType === 'smoothstep' ? 'customEdge' : 'smoothstep';
     setEdgeType(newEdgeType);
     setEdges((eds) => eds.map((edge) => ({ ...edge, type: newEdgeType })));
   };
