@@ -15,51 +15,41 @@ import dagre from 'dagre';
 import { Button, Input, Slider } from 'antd';
 import './App.css';
 
-// Mock data representing the database structure
+// Modified backend data to only include id, consumer_name, topics_input, and topics_output
 const backendData = [
   {
     id: 1,
     consumer_name: 'consumer1',
     topics_input: 'topic_1',
     topics_output: 'topic_2',
-    metadatas: '',
-    kafka_bootstrap_server: '172.17.12.80:9092',
   },
   {
     id: 2,
     consumer_name: 'consumer2',
     topics_input: 'topic_2',
     topics_output: 'topic_3,topic_4',
-    metadatas: '',
-    kafka_bootstrap_server: '172.17.12.80:9092',
   },
   {
     id: 3,
     consumer_name: 'consumer3',
     topics_input: 'topic_3',
     topics_output: 'topic_5',
-    metadatas: '',
-    kafka_bootstrap_server: '172.17.12.80:9092',
   },
   {
     id: 4,
     consumer_name: 'consumer4',
     topics_input: 'topic_4',
     topics_output: 'topic_6',
-    metadatas: '',
-    kafka_bootstrap_server: '172.17.12.80:9092',
   },
   {
     id: 5,
     consumer_name: 'consumer5',
     topics_input: 'topic_5,topic_6',
     topics_output: 'topic_7',
-    metadatas: '',
-    kafka_bootstrap_server: '172.17.12.80:9092',
   },
 ];
 
-// Generate initial nodes and edges based on backend data
+// Generate initial nodes and edges based on the modified backend data
 const generateInitialNodesAndEdges = (data, onDeleteNode, onLabelChange) => {
   const nodes = [];
   const edges = [];
@@ -70,7 +60,7 @@ const generateInitialNodesAndEdges = (data, onDeleteNode, onLabelChange) => {
     nodes.push({
       id: `worker-${item.id}`,
       type: 'worker',
-      data: { label: `worker${item.id}`, onDeleteNode, onLabelChange },
+      data: { label: item.consumer_name, onDeleteNode, onLabelChange },
       position: { x: 0, y: 0 }, // Initial positions, will be updated by Dagre layout
     });
 
@@ -461,8 +451,6 @@ const FlowApp = () => {
           worker_name: worker.data.label,
           topics_input: inputs,
           topics_output: outputs,
-          metadatas: '',
-          kafka_bootstrap_server: '172.17.12.80:9092',
         };
       });
     console.log('Generated Table Structure (JSON):', JSON.stringify(tableStructure, null, 2));
@@ -495,7 +483,7 @@ const FlowApp = () => {
         <Button type="default" onClick={() => onLayout('TB')} style={{ marginRight: 10 }}>
           Vertical Layout
         </Button>
-        <Button type="default" onClick={() => onLayout('LR')}>
+        <Button type="default" onClick={() => onLayout('LR') } style={{ marginRight: 10 }}>
           Horizontal Layout
         </Button>
         <Button type="default" onClick={toggleEdgeType} style={{ marginRight: 10 }}>
