@@ -12,38 +12,38 @@ import ReactFlow, {
   getSmoothStepPath,
 } from 'react-flow-renderer';
 import dagre from 'dagre';
-import { Button, Input, Slider, Modal } from 'antd';
+import { Button, Input, Slider, notification } from 'antd';
 import './App.css';
 
 // Modified backend data to only include id, consumer_name, topics_input, and topics_output
 const backendData = [
   {
     id: 1,
-    consumer_name: 'consumer1',
+    consumer_name: 'worker1',
     topics_input: 'topic_1',
     topics_output: 'topic_2',
   },
   {
     id: 2,
-    consumer_name: 'consumer2',
+    consumer_name: 'worker2',
     topics_input: 'topic_2',
     topics_output: 'topic_3,topic_4',
   },
   {
     id: 3,
-    consumer_name: 'consumer3',
+    consumer_name: 'worker3',
     topics_input: 'topic_3',
     topics_output: 'topic_5',
   },
   {
     id: 4,
-    consumer_name: 'consumer4',
+    consumer_name: 'worker4',
     topics_input: 'topic_4',
     topics_output: 'topic_6',
   },
   {
     id: 5,
-    consumer_name: 'consumer5',
+    consumer_name: 'worker5',
     topics_input: 'topic_5,topic_6',
     topics_output: 'topic_7',
   },
@@ -351,8 +351,14 @@ const FlowApp = () => {
   const [edgeType, setEdgeType] = useState('customEdge'); // Default edge type
   const [ranksep, setRanksep] = useState(200);
   const [nodesep, setNodesep] = useState(200);
-  const [isModalVisible, setIsModalVisible] = useState(false);
 
+  const openNotification = () => {
+    notification.success({
+      message: 'Graph Saved',
+      description: 'The graph was successfully saved!',
+      placement: 'bottomRight',
+    });
+  };
 
   // Initialize with backend data
   useEffect(() => {
@@ -434,7 +440,7 @@ const FlowApp = () => {
   const onSave = () => {
     console.log('Current nodes:', nodes);
     console.log('Current edges:', edges);
-  
+
     const tableStructure = nodes
       .filter((node) => node.id.startsWith('worker'))
       .map((worker) => {
@@ -442,12 +448,12 @@ const FlowApp = () => {
           .filter((edge) => edge.target === worker.id)
           .map((edge) => nodes.find((node) => node.id === edge.source).data.label)
           .join(',');
-  
+
         const outputs = edges
           .filter((edge) => edge.source === worker.id)
           .map((edge) => nodes.find((node) => node.id === edge.target).data.label)
           .join(',');
-  
+
         return {
           id: parseInt(worker.id.split('-')[1]),
           worker_name: worker.data.label,
@@ -455,11 +461,11 @@ const FlowApp = () => {
           topics_output: outputs,
         };
       });
-  
+
     console.log('Generated Table Structure (JSON):', JSON.stringify(tableStructure, null, 2));
-  
-    // Show the modal after saving
-    setIsModalVisible(true);
+
+    // Show the notification after saving
+    openNotification();
   };
 
   const onLayout = useCallback(
@@ -541,16 +547,6 @@ const FlowApp = () => {
         <Controls />
         <Background />
       </ReactFlow>
-  
-      {/* Modal for Save Confirmation */}
-      <Modal
-        title="Save Confirmation"
-        visible={isModalVisible}
-        onOk={() => setIsModalVisible(false)}
-        onCancel={() => setIsModalVisible(false)}
-      >
-        <p>The graph was successfully saved!</p>
-      </Modal>
     </div>
   );
 };
