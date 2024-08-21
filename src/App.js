@@ -12,7 +12,7 @@ import ReactFlow, {
   getSmoothStepPath,
 } from 'react-flow-renderer';
 import dagre from 'dagre';
-import { Button, Input, Slider } from 'antd';
+import { Button, Input, Slider, Modal } from 'antd';
 import './App.css';
 
 // Modified backend data to only include id, consumer_name, topics_input, and topics_output
@@ -351,6 +351,8 @@ const FlowApp = () => {
   const [edgeType, setEdgeType] = useState('customEdge'); // Default edge type
   const [ranksep, setRanksep] = useState(200);
   const [nodesep, setNodesep] = useState(200);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
 
   // Initialize with backend data
   useEffect(() => {
@@ -432,7 +434,7 @@ const FlowApp = () => {
   const onSave = () => {
     console.log('Current nodes:', nodes);
     console.log('Current edges:', edges);
-
+  
     const tableStructure = nodes
       .filter((node) => node.id.startsWith('worker'))
       .map((worker) => {
@@ -440,12 +442,12 @@ const FlowApp = () => {
           .filter((edge) => edge.target === worker.id)
           .map((edge) => nodes.find((node) => node.id === edge.source).data.label)
           .join(',');
-
+  
         const outputs = edges
           .filter((edge) => edge.source === worker.id)
           .map((edge) => nodes.find((node) => node.id === edge.target).data.label)
           .join(',');
-
+  
         return {
           id: parseInt(worker.id.split('-')[1]),
           worker_name: worker.data.label,
@@ -453,7 +455,11 @@ const FlowApp = () => {
           topics_output: outputs,
         };
       });
+  
     console.log('Generated Table Structure (JSON):', JSON.stringify(tableStructure, null, 2));
+  
+    // Show the modal after saving
+    setIsModalVisible(true);
   };
 
   const onLayout = useCallback(
@@ -483,36 +489,40 @@ const FlowApp = () => {
         <Button type="default" onClick={() => onLayout('TB')} style={{ marginRight: 10 }}>
           Vertical Layout
         </Button>
-        <Button type="default" onClick={() => onLayout('LR') } style={{ marginRight: 10 }}>
+        <Button type="default" onClick={() => onLayout('LR')}>
           Horizontal Layout
         </Button>
         <Button type="default" onClick={toggleEdgeType} style={{ marginRight: 10 }}>
           Toggle Edge Type
         </Button>
-        <Button type="primary" onClick={onSave} style={{ marginRight: 10, backgroundColor: 'green', borderColor: 'green' }}>
+        <Button
+          type="primary"
+          onClick={onSave}
+          style={{ marginRight: 10, backgroundColor: 'green', borderColor: 'green' }}
+        >
           Save
         </Button>
       </div>
       <div style={{ width: '200px', marginTop: '10px' }}>
-          <label>Rank Separation: {ranksep}</label>
-          <Slider
-            min={100}
-            max={500}
-            step={50}
-            value={ranksep}
-            onChange={(value) => setRanksep(value)}
-          />
-        </div>
-        <div style={{ width: '200px', marginTop: '10px' }}>
-          <label>Node Separation: {nodesep}</label>
-          <Slider
-            min={100}
-            max={500}
-            step={50}
-            value={nodesep}
-            onChange={(value) => setNodesep(value)}
-          />
-        </div>
+        <label>Rank Separation: {ranksep}</label>
+        <Slider
+          min={100}
+          max={500}
+          step={50}
+          value={ranksep}
+          onChange={(value) => setRanksep(value)}
+        />
+      </div>
+      <div style={{ width: '200px', marginTop: '10px' }}>
+        <label>Node Separation: {nodesep}</label>
+        <Slider
+          min={100}
+          max={500}
+          step={50}
+          value={nodesep}
+          onChange={(value) => setNodesep(value)}
+        />
+      </div>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -531,6 +541,16 @@ const FlowApp = () => {
         <Controls />
         <Background />
       </ReactFlow>
+  
+      {/* Modal for Save Confirmation */}
+      <Modal
+        title="Save Confirmation"
+        visible={isModalVisible}
+        onOk={() => setIsModalVisible(false)}
+        onCancel={() => setIsModalVisible(false)}
+      >
+        <p>The graph was successfully saved!</p>
+      </Modal>
     </div>
   );
 };
