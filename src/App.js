@@ -490,8 +490,11 @@ const FlowApp = () => {
         <Button type="primary" onClick={onAddTopic} style={{ marginRight: 10 }}>
           Add Topic
         </Button>
-        <Button type="default" onClick={onSave} style={{ marginRight: 10 }}>
+        <Button type="primary" danger onClick={onSave} style={{ marginRight: 10 }}>
           Save
+        </Button>
+        <Button type="default" onClick={toggleEdgeType} style={{ marginRight: 10 }}>
+          Toggle Edge Type
         </Button>
         <Button type="default" onClick={() => onLayout('TB')} style={{ marginRight: 10 }}>
           Vertical Layout
@@ -499,9 +502,7 @@ const FlowApp = () => {
         <Button type="default" onClick={() => onLayout('LR')}>
           Horizontal Layout
         </Button>
-        <Button type="default" onClick={toggleEdgeType} style={{ marginRight: 10 }}>
-          Toggle Edge Type
-        </Button>
+
       </div>
       <ReactFlow
         nodes={nodes}
