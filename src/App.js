@@ -83,7 +83,7 @@ const generateInitialNodesAndEdges = (data) => {
         id: `e-${inputTopic}-worker-${item.id}`,
         source: inputTopic,
         target: `worker-${item.id}`,
-        type: 'step',
+        type: 'customEdge',
         animated: true,
       });
     });
@@ -94,7 +94,7 @@ const generateInitialNodesAndEdges = (data) => {
         id: `e-worker-${item.id}-${outputTopic}`,
         source: `worker-${item.id}`,
         target: outputTopic,
-        type: 'step',
+        type: 'customEdge',
         animated: true,
       });
     });
@@ -170,7 +170,20 @@ const TopicNode = ({ data }) => {
 };
 
 // Custom Edge with Delete Button
-const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd, data }) => {
+const CustomEdge = ({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  style,
+  markerEnd,
+  data,
+}) => {
+  const path = `M${sourceX},${sourceY} C${sourceX + (targetX - sourceX) / 2},${sourceY} ${targetX - (targetX - sourceX) / 2},${targetY} ${targetX},${targetY}`;
+
   const onEdgeClick = (evt, edgeId) => {
     evt.stopPropagation();
     data.onEdgeDelete(edgeId); // Use the onEdgeDelete function passed via the data prop
@@ -182,12 +195,22 @@ const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, ta
         id={id}
         style={style}
         className="react-flow__edge-path"
-        d={`M${sourceX},${sourceY} C${sourceX + 100},${sourceY} ${targetX - 100},${targetY} ${targetX},${targetY}`}
+        d={path}
         markerEnd={markerEnd}
       />
       <text>
-        <textPath href={`#${id}`} style={{ fontSize: 12 }} startOffset="50%" textAnchor="middle">
-          <tspan dy={-10} xlinkHref={`#${id}`} className="delete-btn" onClick={(evt) => onEdgeClick(evt, id)}>
+        <textPath
+          href={`#${id}`}
+          style={{ fontSize: 12 }}
+          startOffset="50%"
+          textAnchor="middle"
+        >
+          <tspan
+            dy={-10}
+            xlinkHref={`#${id}`}
+            className="delete-btn"
+            onClick={(evt) => onEdgeClick(evt, id)}
+          >
             Delete
           </tspan>
         </textPath>
@@ -203,7 +226,7 @@ const nodeTypes = {
 };
 
 const edgeTypes = {
-  floating: CustomEdge,
+  customEdge: CustomEdge,
 };
 
 const FlowApp = () => {
@@ -220,7 +243,10 @@ const FlowApp = () => {
   }, [setNodes, setEdges]);
 
   const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge({ ...params, type: 'step', data: { onEdgeDelete } }, eds)),
+    (params) =>
+      setEdges((eds) =>
+        addEdge({ ...params, type: 'customEdge', data: { onEdgeDelete } }, eds)
+      ),
     [setEdges]
   );
 
