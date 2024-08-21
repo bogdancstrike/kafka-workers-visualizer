@@ -12,7 +12,7 @@ import ReactFlow, {
   getSmoothStepPath,
 } from 'react-flow-renderer';
 import dagre from 'dagre';
-import { Button } from 'antd';
+import { Button, Input } from 'antd';
 import './App.css';
 
 // Mock data representing the database structure
@@ -60,7 +60,7 @@ const backendData = [
 ];
 
 // Generate initial nodes and edges based on backend data
-const generateInitialNodesAndEdges = (data, onDeleteNode) => {
+const generateInitialNodesAndEdges = (data, onDeleteNode, onLabelChange) => {
   const nodes = [];
   const edges = [];
   const topics = new Set();
@@ -70,7 +70,7 @@ const generateInitialNodesAndEdges = (data, onDeleteNode) => {
     nodes.push({
       id: `worker-${item.id}`,
       type: 'worker',
-      data: { label: `worker${item.id}`, onDeleteNode },
+      data: { label: `worker${item.id}`, onDeleteNode, onLabelChange },
       position: { x: 0, y: 0 }, // Initial positions, will be updated by Dagre layout
     });
 
@@ -106,7 +106,7 @@ const generateInitialNodesAndEdges = (data, onDeleteNode) => {
     nodes.push({
       id: topic,
       type: 'topic',
-      data: { label: topic, onDeleteNode },
+      data: { label: topic, onDeleteNode, onLabelChange },
       position: { x: 0, y: 0 }, // Initial positions, will be updated by Dagre layout
     });
   });
@@ -148,17 +148,25 @@ const getLayoutedElements = (nodes, edges, direction = 'LR') => {
   return { nodes, edges };
 };
 
-// Custom Node for Workers with Delete Button
+// Custom Node for Workers with Editable Name and Delete Button
 const WorkerNode = ({ data, id }) => {
   const onDeleteClick = () => {
     console.log(`Attempting to delete worker node: ${id}`);
     data.onDeleteNode(id);
   };
 
+  const onChange = (e) => {
+    data.onLabelChange(id, e.target.value);
+  };
+
   return (
     <div style={{ backgroundColor: '#FFC0CB', padding: '10px', borderRadius: '5px', border: '1px solid #000', position: 'relative' }}>
       <Handle type="target" position="left" style={{ background: '#555' }} />
-      <strong>{data.label}</strong>
+      <Input
+        value={data.label}
+        onChange={onChange}
+        style={{ width: '100%', marginBottom: '5px', fontWeight: 'bold' }}
+      />
       <button
         onClick={onDeleteClick}
         style={{
@@ -181,17 +189,25 @@ const WorkerNode = ({ data, id }) => {
   );
 };
 
-// Custom Node for Topics with Delete Button
+// Custom Node for Topics with Editable Name and Delete Button
 const TopicNode = ({ data, id }) => {
   const onDeleteClick = () => {
     console.log(`Attempting to delete topic node: ${id}`);
     data.onDeleteNode(id);
   };
 
+  const onChange = (e) => {
+    data.onLabelChange(id, e.target.value);
+  };
+
   return (
     <div style={{ backgroundColor: '#ADD8E6', padding: '10px', borderRadius: '5px', border: '1px solid #000', position: 'relative' }}>
       <Handle type="target" position="left" style={{ background: '#555' }} />
-      <strong>{data.label}</strong>
+      <Input
+        value={data.label}
+        onChange={onChange}
+        style={{ width: '100%', marginBottom: '5px', fontWeight: 'bold' }}
+      />
       <button
         onClick={onDeleteClick}
         style={{
@@ -342,7 +358,7 @@ const FlowApp = () => {
 
   // Initialize with backend data
   useEffect(() => {
-    const { nodes, edges } = generateInitialNodesAndEdges(backendData, onDeleteNode);
+    const { nodes, edges } = generateInitialNodesAndEdges(backendData, onDeleteNode, onLabelChange);
     const layouted = getLayoutedElements(nodes, edges);
     setNodes(layouted.nodes);
     setEdges(layouted.edges);
@@ -371,7 +387,7 @@ const FlowApp = () => {
     const newWorker = {
       id: `worker-${nodeIdCounter}`,
       type: 'worker',
-      data: { label: `Worker ${nodeIdCounter}`, onDeleteNode },
+      data: { label: `Worker ${nodeIdCounter}`, onDeleteNode, onLabelChange },
       position: { x: 200, y: Math.random() * 250 },
     };
 
@@ -383,7 +399,7 @@ const FlowApp = () => {
     const newTopic = {
       id: `topic-${nodeIdCounter}`,
       type: 'topic',
-      data: { label: `Topic ${nodeIdCounter}`, onDeleteNode },
+      data: { label: `Topic ${nodeIdCounter}`, onDeleteNode, onLabelChange },
       position: { x: 400, y: Math.random() * 250 },
     };
 
@@ -406,6 +422,15 @@ const FlowApp = () => {
       setEdges((eds) => eds.filter((edge) => edge.source !== id && edge.target !== id));
     },
     [setNodes, setEdges]
+  );
+
+  const onLabelChange = useCallback(
+    (id, newLabel) => {
+      setNodes((nds) =>
+        nds.map((node) => (node.id === id ? { ...node, data: { ...node.data, label: newLabel } } : node))
+      );
+    },
+    [setNodes]
   );
 
   const onSave = () => {
@@ -473,6 +498,7 @@ const FlowApp = () => {
         <Button type="default" onClick={toggleEdgeType} style={{ marginRight: 10 }}>
           Toggle Edge Type
         </Button>
+        <span>Current Edge Type: {edgeType}</span>
       </div>
       <ReactFlow
         nodes={nodes}
