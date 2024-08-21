@@ -536,6 +536,7 @@ const FlowApp = () => {
         fitView
         isValidConnection={isValidConnection}
         minZoom={0.1}
+        maxZoom={5}
         defaultEdgeOptions={{ data: { onEdgeDelete } }}
       >
         <MiniMap />
