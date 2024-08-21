@@ -9,6 +9,7 @@ import ReactFlow, {
   useNodesState,
   useEdgesState,
   MarkerType,
+  getSmoothStepPath,
 } from 'react-flow-renderer';
 import dagre from 'dagre';
 import { Button } from 'antd';
@@ -83,7 +84,7 @@ const generateInitialNodesAndEdges = (data) => {
         id: `e-${inputTopic}-worker-${item.id}`,
         source: inputTopic,
         target: `worker-${item.id}`,
-        type: 'customEdge',
+        type: 'customEdge', // Default type
         animated: true,
       });
     });
@@ -94,7 +95,7 @@ const generateInitialNodesAndEdges = (data) => {
         id: `e-worker-${item.id}-${outputTopic}`,
         source: `worker-${item.id}`,
         target: outputTopic,
-        type: 'customEdge',
+        type: 'customEdge', // Default type
         animated: true,
       });
     });
@@ -169,8 +170,65 @@ const TopicNode = ({ data }) => {
   );
 };
 
-// Custom Edge with Delete Button
-const CustomEdge = ({
+// Custom Edge with Delete Button using SmoothStep
+const CustomSmoothStepEdge = ({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  style,
+  markerEnd,
+  data,
+}) => {
+  const [edgePath] = getSmoothStepPath({
+    sourceX,
+    sourceY,
+    sourcePosition,
+    targetX,
+    targetY,
+    targetPosition,
+  });
+
+  const onEdgeClick = (evt, edgeId) => {
+    evt.stopPropagation();
+    data.onEdgeDelete(edgeId); // Use the onEdgeDelete function passed via the data prop
+  };
+
+  return (
+    <>
+      <path
+        id={id}
+        style={style}
+        className="react-flow__edge-path"
+        d={edgePath}
+        markerEnd={markerEnd}
+      />
+      <text>
+        <textPath
+          href={`#${id}`}
+          style={{ fontSize: 12 }}
+          startOffset="50%"
+          textAnchor="middle"
+        >
+          <tspan
+            dy={-10}
+            xlinkHref={`#${id}`}
+            className="delete-btn"
+            onClick={(evt) => onEdgeClick(evt, id)}
+          >
+            Delete
+          </tspan>
+        </textPath>
+      </text>
+    </>
+  );
+};
+
+// Custom Edge with Delete Button using Floating
+const CustomFloatingEdge = ({
   id,
   sourceX,
   sourceY,
@@ -226,13 +284,15 @@ const nodeTypes = {
 };
 
 const edgeTypes = {
-  customEdge: CustomEdge,
+  smoothstep: CustomSmoothStepEdge,
+  customEdge: CustomFloatingEdge,
 };
 
 const FlowApp = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [nodeIdCounter, setNodeIdCounter] = useState(backendData.length + 1);
+  const [edgeType, setEdgeType] = useState('smoothstep'); // Default edge type is smoothstep
 
   // Initialize with backend data
   useEffect(() => {
@@ -245,9 +305,9 @@ const FlowApp = () => {
   const onConnect = useCallback(
     (params) =>
       setEdges((eds) =>
-        addEdge({ ...params, type: 'customEdge', data: { onEdgeDelete } }, eds)
+        addEdge({ ...params, type: edgeType, data: { onEdgeDelete } }, eds)
       ),
-    [setEdges]
+    [setEdges, edgeType]
   );
 
   const isValidConnection = (connection) => {
@@ -335,6 +395,12 @@ const FlowApp = () => {
     [setEdges]
   );
 
+  const toggleEdgeType = () => {
+    const newEdgeType = edgeType === 'smoothstep' ? 'customEdge' : 'smoothstep';
+    setEdgeType(newEdgeType);
+    setEdges((eds) => eds.map((edge) => ({ ...edge, type: newEdgeType })));
+  };
+
   return (
     <div style={{ height: '100vh' }}>
       <div className="controls">
@@ -353,6 +419,10 @@ const FlowApp = () => {
         <Button type="default" onClick={() => onLayout('LR')}>
           Horizontal Layout
         </Button>
+        <Button type="default" onClick={toggleEdgeType} style={{ marginRight: 10 }}>
+          Toggle Edge Type
+        </Button>
+        <span>Current Edge Type: {edgeType}</span>
       </div>
       <ReactFlow
         nodes={nodes}
