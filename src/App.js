@@ -83,7 +83,7 @@ const generateInitialNodesAndEdges = (data) => {
         id: `e-${inputTopic}-worker-${item.id}`,
         source: inputTopic,
         target: `worker-${item.id}`,
-        type: 'floating',
+        type: 'step',
         animated: true,
       });
     });
@@ -94,7 +94,7 @@ const generateInitialNodesAndEdges = (data) => {
         id: `e-worker-${item.id}-${outputTopic}`,
         source: `worker-${item.id}`,
         target: outputTopic,
-        type: 'floating',
+        type: 'step',
         animated: true,
       });
     });
@@ -220,7 +220,7 @@ const FlowApp = () => {
   }, [setNodes, setEdges]);
 
   const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge({ ...params, type: 'floating', data: { onEdgeDelete } }, eds)),
+    (params) => setEdges((eds) => addEdge({ ...params, type: 'step', data: { onEdgeDelete } }, eds)),
     [setEdges]
   );
 
