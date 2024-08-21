@@ -447,7 +447,7 @@ const FlowApp = () => {
   );
 
   const toggleEdgeType = () => {
-    const newEdgeType = edgeType === 'smoothstep' ? 'customEdge' : 'smoothstep';
+    const newEdgeType = edgeType === 'step' ? 'customEdge' : 'step';
     setEdgeType(newEdgeType);
     setEdges((eds) => eds.map((edge) => ({ ...edge, type: newEdgeType })));
   };
@@ -473,7 +473,6 @@ const FlowApp = () => {
         <Button type="default" onClick={toggleEdgeType} style={{ marginRight: 10 }}>
           Toggle Edge Type
         </Button>
-        <span>Current Edge Type: {edgeType}</span>
       </div>
       <ReactFlow
         nodes={nodes}
