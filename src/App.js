@@ -502,7 +502,6 @@ const FlowApp = () => {
         <Button type="default" onClick={toggleEdgeType} style={{ marginRight: 10 }}>
           Toggle Edge Type
         </Button>
-        <span>Current Edge Type: {edgeType}</span>
       </div>
       <ReactFlow
         nodes={nodes}
