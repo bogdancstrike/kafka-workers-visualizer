@@ -169,7 +169,7 @@ const TopicNode = ({ data }) => {
 };
 
 // Custom Edge with Delete Button
-const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd }) => {
+const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd, setEdges }) => {
   const onEdgeClick = (evt, edgeId) => {
     evt.stopPropagation();
     setEdges((eds) => eds.filter((edge) => edge.id !== edgeId));
@@ -187,7 +187,7 @@ const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, ta
       <text>
         <textPath href={`#${id}`} style={{ fontSize: 12 }} startOffset="50%" textAnchor="middle">
           <tspan dy={-10} xlinkHref={`#${id}`} className="delete-btn" onClick={(evt) => onEdgeClick(evt, id)}>
-            ×
+            Delete
           </tspan>
         </textPath>
       </text>
