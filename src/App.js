@@ -12,7 +12,7 @@ import ReactFlow, {
   getSmoothStepPath,
 } from 'react-flow-renderer';
 import dagre from 'dagre';
-import { Button, Input } from 'antd';
+import { Button, Input, Slider } from 'antd';
 import './App.css';
 
 // Mock data representing the database structure
@@ -115,14 +115,14 @@ const generateInitialNodesAndEdges = (data, onDeleteNode, onLabelChange) => {
 };
 
 // Layout using Dagre
-const getLayoutedElements = (nodes, edges, direction = 'LR') => {
+const getLayoutedElements = (nodes, edges, direction = 'LR', ranksep = 200, nodesep = 200) => {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
   const isHorizontal = direction === 'LR';
   dagreGraph.setGraph({
     rankdir: direction,
-    ranksep: 200, // Increased space between nodes vertically
-    nodesep: 200, // Increased space between nodes horizontally
+    ranksep: ranksep, // Adjusted space between nodes vertically
+    nodesep: nodesep, // Adjusted space between nodes horizontally
   });
 
   nodes.forEach((node) => {
@@ -359,14 +359,16 @@ const FlowApp = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [nodeIdCounter, setNodeIdCounter] = useState(backendData.length + 1);
   const [edgeType, setEdgeType] = useState('customEdge'); // Default edge type
+  const [ranksep, setRanksep] = useState(200);
+  const [nodesep, setNodesep] = useState(200);
 
   // Initialize with backend data
   useEffect(() => {
     const { nodes, edges } = generateInitialNodesAndEdges(backendData, onDeleteNode, onLabelChange);
-    const layouted = getLayoutedElements(nodes, edges);
+    const layouted = getLayoutedElements(nodes, edges, 'LR', ranksep, nodesep);
     setNodes(layouted.nodes);
     setEdges(layouted.edges);
-  }, [setNodes, setEdges]);
+  }, [setNodes, setEdges, ranksep, nodesep]);
 
   const onConnect = useCallback(
     (params) =>
@@ -468,11 +470,11 @@ const FlowApp = () => {
 
   const onLayout = useCallback(
     (direction) => {
-      const layouted = getLayoutedElements(nodes, edges, direction);
+      const layouted = getLayoutedElements(nodes, edges, direction, ranksep, nodesep);
       setNodes([...layouted.nodes]);
       setEdges([...layouted.edges]);
     },
-    [nodes, edges, setNodes, setEdges]
+    [nodes, edges, ranksep, nodesep, setNodes, setEdges]
   );
 
   const toggleEdgeType = () => {
@@ -490,19 +492,38 @@ const FlowApp = () => {
         <Button type="primary" onClick={onAddTopic} style={{ marginRight: 10 }}>
           Add Topic
         </Button>
-        <Button type="primary" danger onClick={onSave} style={{ marginRight: 10 }}>
-          Save
-        </Button>
-        <Button type="default" onClick={toggleEdgeType} style={{ marginRight: 10 }}>
-          Toggle Edge Type
-        </Button>
         <Button type="default" onClick={() => onLayout('TB')} style={{ marginRight: 10 }}>
           Vertical Layout
         </Button>
         <Button type="default" onClick={() => onLayout('LR')}>
           Horizontal Layout
         </Button>
-
+        <Button type="default" onClick={toggleEdgeType} style={{ marginRight: 10 }}>
+          Toggle Edge Type
+        </Button>
+        <Button type="primary" onClick={onSave} style={{ marginRight: 10, backgroundColor: 'green', borderColor: 'green' }}>
+          Save
+        </Button>
+        <div style={{ width: '200px', marginTop: '10px' }}>
+          <label>Rank Separation: {ranksep}</label>
+          <Slider
+            min={100}
+            max={500}
+            step={50}
+            value={ranksep}
+            onChange={(value) => setRanksep(value)}
+          />
+        </div>
+        <div style={{ width: '200px', marginTop: '10px' }}>
+          <label>Node Separation: {nodesep}</label>
+          <Slider
+            min={100}
+            max={500}
+            step={50}
+            value={nodesep}
+            onChange={(value) => setNodesep(value)}
+          />
+        </div>
       </div>
       <ReactFlow
         nodes={nodes}
