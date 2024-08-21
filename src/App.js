@@ -504,7 +504,6 @@ const FlowApp = () => {
         <Button type="primary" onClick={onSave} style={{ marginRight: 10, backgroundColor: 'green', borderColor: 'green' }}>
           Save
         </Button>
-        
       </div>
       <div style={{ width: '200px', marginTop: '10px' }}>
           <label>Rank Separation: {ranksep}</label>

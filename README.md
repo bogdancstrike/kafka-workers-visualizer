@@ -15,6 +15,9 @@ This project is a React application that visualizes Kafka consumer and topic top
 
 This application provides a visual tool to manage Kafka topics and consumers. The visualized graph allows you to add, delete, and edit both workers and topics, as well as the connections between them. The layout of the graph can be adjusted dynamically, and the configurations can be saved to mimic a backend Kafka configuration structure.
 
+![Graph](./images/graph.png)
+
+
 ## Features
 
 - **Dynamic Node Addition**: Add new Kafka consumers (workers) and topics.
